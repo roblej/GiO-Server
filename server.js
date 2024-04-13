@@ -56,7 +56,7 @@ connection.connect(err => {
     });
   });
 
-app.post('/api/hello', (req, res) => {
+  app.post('/api/hello', (req, res) => {
     const { id, score } = req.body;
     const query = 'INSERT INTO test (id, score) VALUES (?, ?)';
   
@@ -72,9 +72,37 @@ app.post('/api/hello', (req, res) => {
   });
 
 
+
+
+
+
+class ConnecteUser{
+  constructor(socket){
+    this.pos_ = [Math.random*20, 0, Math.random * 20];
+    this.socket_ = socket;
+    this.socket_.on('pos', (d) =>{
+      this.pos_ = [...d];
+      this.SpamEveryone_();
+    });
+    this.SpamEveryone_();
+  }
+
+
+  SpamEveryone_(){
+    this.socket_.emit('pos', [this.id_,this.pos_]);
+
+    for(let i = 0; i < _USERS.length; ++i){
+      _USERS[i].socket_.emit('pos',_USERS[i].pos_);
+      this.socket_.emit('pos',[_USERS[i].id_, _USERS[i].pos_])
+    }
+}
+}
+const _USERS=[]
 // Socket.IO 연결 처리
 io.on('connection', (socket) => {
     console.log('A user connected');
+    console.log(_USERS);
+    _USERS.push(new ConnecteUser(socket));
 
     socket.on('disconnect', () => {
         console.log('User disconnected');
