@@ -10,6 +10,8 @@ const io = socketIO(server);
 const cors = require('cors');
 app.use(cors());
 app.use(bodyParser.json());
+const bcrypt = require('bcrypt');
+const saltRounds = 10; // 비밀번호 해싱 시 사용할 솔트 라운드 수
 
 const connection = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -27,9 +29,82 @@ connection.connect(err => {
     console.log('데이터베이스에 성공적으로 연결됨. 연결 ID: ' + connection.threadId);
   });
   
-  app.get('/api/hello', (req, res) => {
-    const query = 'SELECT * FROM test';
-    connection.query(query, (err, results, fields) => {
+  app.post('/login', (req, res) => {
+    const { id, password } = req.body;
+  
+    const query = 'SELECT id, password FROM user WHERE id = ?';
+    connection.query(query, [id], async (err, results) => {
+      if (err) {
+        console.error('로그인 중 데이터베이스 조회 오류:', err);
+        res.status(500).json({ message: '로그인 실패' });
+        return;
+      }
+  
+      if (results.length === 0) {
+        res.status(401).json({ message: '잘못된 사용자 ID 또는 비밀번호' });
+        return;
+      }
+  
+      const user = results[0];
+      // 데이터베이스에 저장된 해시와 입력된 비밀번호 비교
+      try {
+        const match = await bcrypt.compare(password, user.password);
+        if (match) {
+          res.json({ message: '로그인 성공' });
+        } else {
+          res.status(401).json({ message: '잘못된 사용자 ID 또는 비밀번호' });
+        }
+      } catch (error) {
+        console.error('비밀번호 비교 중 오류:', error);
+        res.status(500).json({ message: '서버 오류 발생' });
+      }
+    });
+  });
+
+  app.post('/register', async (req, res) => {
+    const { id, password } = req.body;
+  
+    // 먼저 ID가 이미 존재하는지 확인
+    const idCheckQuery = 'SELECT id FROM user WHERE id = ?';
+    connection.query(idCheckQuery, [id], async (err, results) => {
+      if (err) {
+        console.error('데이터베이스 조회 오류:', err);
+        res.status(500).json({ message: '데이터베이스 조회 중 오류 발생' });
+        return;
+      }
+  
+      // 결과가 있다면, 이미 해당 ID가 존재한다는 것을 의미
+      if (results.length > 0) {
+        res.status(409).json({ message: '중복된 아이디입니다.' }); // 409 Conflict 상태 코드 사용
+        return;
+      }
+  
+      // ID가 중복되지 않은 경우, 비밀번호 해싱 후 새로운 유저 등록
+      try {
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const insertQuery = 'INSERT INTO user (id, password) VALUES (?, ?)';
+        connection.query(insertQuery, [id, hashedPassword], (err, results) => {
+          if (err) {
+            console.error('회원가입 실패:', err);
+            res.status(500).json({ message: '회원가입 실패' });
+            return;
+          }
+          console.log('회원가입 성공:', results);
+          res.status(201).json({ message: '회원가입 성공' });
+        });
+      } catch (error) {
+        console.error('비밀번호 해싱 실패:', error);
+        res.status(500).json({ message: '서버 오류 발생' });
+      }
+    });
+  });
+  
+  app.get('/api/gamescore', (req, res) => {
+    const userId = req.query.id;
+    const gameName = req.query.game_name;
+    const query = 'SELECT * FROM game_score WHERE id = ? AND game_name = ?';
+
+    connection.query(query, [userId, gameName], (err, results, fields) => {
       if (err) {
         console.error('쿼리 실행 실패: ' + err.stack);
         res.status(500).json({error: '데이터베이스 쿼리 실행 중 오류 발생'});
@@ -39,11 +114,11 @@ connection.connect(err => {
     });
   });
 
-  app.post('/api/hello', (req, res) => {
-    const { id, score } = req.body;
-    const query = 'INSERT INTO test (id, score) VALUES (?, ?)';
+  app.post('/api/gamescore', (req, res) => {
+    const { id, game_name, score } = req.body;
+    const query = 'INSERT INTO game_score (id, game_name ,score) VALUES (?, ?, ?)';
   
-    connection.query(query, [id, score], (error, results, fields) => {
+    connection.query(query, [id, game_name ,score], (error, results, fields) => {
       if (error) {
         console.error('데이터 삽입 실패:', error);
         res.status(500).json({ message: '데이터 삽입 실패' });
