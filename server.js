@@ -8,9 +8,42 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 const cors = require('cors');
+const bcrypt = require('bcrypt');
+const path = require('path');
+const compression = require('compression');
+const expressStaticGzip = require('express-static-gzip');
+
 app.use(cors());
 app.use(bodyParser.json());
-const bcrypt = require('bcrypt');
+
+// WebGL용 서브 애플리케이션과 서버 설정
+const webglApp = express();
+const webglServer = http.createServer(webglApp);
+webglApp.use(compression());
+
+// Brotli 압축 파일을 적절히 서빙하기 위한 설정
+// webglApp.use(express.static(path.join(__dirname, 'WebGLTest1')));
+webglApp.use('/', expressStaticGzip('WebGLTest1/', {
+  enableBrotli: true,
+  orderPreference: ['br', 'gz'],
+  serveStatic: {
+      setHeaders: function (res, path) {
+          res.setHeader("Content-Encoding", "gzip");
+          if (path.endsWith('.js.gz')) {
+              res.setHeader("Content-Type", "application/javascript");
+          } else if (path.endsWith('.data.gz')) {
+              res.setHeader("Content-Type", "application/octet-stream");
+          }
+      }
+  }
+}));
+
+const WEBGL_PORT = 8080;
+webglServer.listen(WEBGL_PORT, () => {
+  console.log(`WebGL 서버가 ${WEBGL_PORT}번 포트에서 실행중입니다.`);
+});
+
+
 const saltRounds = 10; // 비밀번호 해싱 시 사용할 솔트 라운드 수
 
 const connection = mysql.createConnection({
