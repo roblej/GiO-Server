@@ -23,6 +23,7 @@
         <div id="unity-build-title">My project (1)</div>
       </div>
     </div>
+    <script src="Build/WebGLTest1.loader.js"></script>
     <script>
       var container = document.querySelector("#unity-container");
       var canvas = document.querySelector("#unity-canvas");
@@ -54,9 +55,9 @@
         }
         updateBannerVisibility();
       }
-
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/WebGLTest1.loader.js";
+      
+      var buildUrl = "http://localhost:8080/Build" //"Build";
+      //var loaderUrl = "WebGLTest1.loader.js";
       var config = {
         dataUrl: buildUrl + "/WebGLTest1.data.gz",
         frameworkUrl: buildUrl + "/WebGLTest1.framework.js.gz",
@@ -99,17 +100,21 @@
 
       loadingBar.style.display = "block";
 
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
+      //var script = document.createElement("script");
+      //script.src = loaderUrl;
+      window.onload = () => {
+        console.log(config)
+        console.log('로드중이니?')
         createUnityInstance(canvas, config, (progress) => {
           progressBarFull.style.width = 100 * progress + "%";
         }).then((unityInstance) => {
+          console.log('로드됐니?')
           loadingBar.style.display = "none";
           fullscreenButton.onclick = () => {
             unityInstance.SetFullscreen(1);
           };
         }).catch((message) => {
+          console.log('로드실패했니??')
           alert(message);
         });
       };

@@ -10,33 +10,13 @@ const io = socketIO(server);
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const path = require('path');
-const compression = require('compression');
-const expressStaticGzip = require('express-static-gzip');
+
 
 app.use(cors());
 app.use(bodyParser.json());
 
 // WebGL용 서브 애플리케이션과 서버 설정
 const webglApp = express();
-// webglApp.use(compression());
-
-// Brotli 압축 파일을 적절히 서빙하기 위한 설정
-// webglApp.use(express.static(path.join(__dirname, 'WebGLTest1')));
-// webglApp.use('/', expressStaticGzip('WebGLTest1/', {
-//   enableBrotli: true,
-//   orderPreference: ['br', 'gz'],
-//   serveStatic: {
-//       setHeaders: function (res, path) {
-//           res.setHeader("Content-Encoding", "gzip");
-//           if (path.endsWith('.js.gz')) {
-//               res.setHeader("Content-Type", "application/javascript");
-//           } else if (path.endsWith('.data.gz')) {
-//               res.setHeader("Content-Type", "application/octet-stream");
-//           }
-//       }
-//   }
-// }));
-// Gzip 파일에 대한 Content-Encoding 설정 미들웨어
 
 function setGzipHeader(req, res, next) {
   const gzExtension = '.gz';
