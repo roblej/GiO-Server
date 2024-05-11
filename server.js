@@ -18,27 +18,47 @@ app.use(bodyParser.json());
 
 // WebGL용 서브 애플리케이션과 서버 설정
 const webglApp = express();
-const webglServer = http.createServer(webglApp);
-webglApp.use(compression());
+// webglApp.use(compression());
 
 // Brotli 압축 파일을 적절히 서빙하기 위한 설정
 // webglApp.use(express.static(path.join(__dirname, 'WebGLTest1')));
-webglApp.use('/', expressStaticGzip('WebGLTest1/', {
-  enableBrotli: true,
-  orderPreference: ['br', 'gz'],
-  serveStatic: {
-      setHeaders: function (res, path) {
-          res.setHeader("Content-Encoding", "gzip");
-          if (path.endsWith('.js.gz')) {
-              res.setHeader("Content-Type", "application/javascript");
-          } else if (path.endsWith('.data.gz')) {
-              res.setHeader("Content-Type", "application/octet-stream");
-          }
-      }
+// webglApp.use('/', expressStaticGzip('WebGLTest1/', {
+//   enableBrotli: true,
+//   orderPreference: ['br', 'gz'],
+//   serveStatic: {
+//       setHeaders: function (res, path) {
+//           res.setHeader("Content-Encoding", "gzip");
+//           if (path.endsWith('.js.gz')) {
+//               res.setHeader("Content-Type", "application/javascript");
+//           } else if (path.endsWith('.data.gz')) {
+//               res.setHeader("Content-Type", "application/octet-stream");
+//           }
+//       }
+//   }
+// }));
+// Gzip 파일에 대한 Content-Encoding 설정 미들웨어
+
+function setGzipHeader(req, res, next) {
+  const gzExtension = '.gz';
+  const requestedPath = req.path;
+
+  // 요청된 경로가 .gz로 끝나면 헤더 설정
+  if (requestedPath.endsWith(gzExtension)) {
+    res.setHeader('Content-Encoding', 'gzip');
+    res.setHeader('Content-Type', 'application/gzip'); // 올바른 MIME 타입 설정
   }
-}));
+  next();
+}
+
+// 미들웨어를 정적 파일 서빙 전에 적용
+webglApp.use(cors())
+webglApp.use(setGzipHeader);
+webglApp.use(express.static('WebGLTest1'));
+
+
 
 const WEBGL_PORT = 8080;
+const webglServer = http.createServer(webglApp);
 webglServer.listen(WEBGL_PORT, () => {
   console.log(`WebGL 서버가 ${WEBGL_PORT}번 포트에서 실행중입니다.`);
 });
