@@ -33,7 +33,7 @@ function setGzipHeader(req, res, next) {
 // 미들웨어를 정적 파일 서빙 전에 적용
 webglApp.use(cors())
 webglApp.use(setGzipHeader);
-webglApp.use(express.static('WebGLTest1'));
+webglApp.use(express.static('MiniGames/WebGLTest1'));
 
 
 
