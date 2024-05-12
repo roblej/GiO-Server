@@ -1,15 +1,15 @@
 const express = require('express');
 const http = require('http');
 const bodyParser = require('body-parser');
-const socketIO = require('socket.io');
+// const socketIO = require('socket.io');
 const mysql = require('mysql2');
 require('dotenv').config();
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server);
+// const io = socketIO(server);
 const cors = require('cors');
 const bcrypt = require('bcrypt');
-const path = require('path');
+// const path = require('path');
 
 
 app.use(cors());
