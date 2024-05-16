@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import subprocess
 import speech_recognition as sr
-import os
+import os  # os 모듈을 임포트합니다
 
 app = Flask(__name__)
 CORS(app)
@@ -18,7 +18,8 @@ def recognize():
     audio_file.save(webm_path)  # 임시 파일 저장
 
     # Convert to WAV using ffmpeg
-    subprocess.run(['ffmpeg', '-i', webm_path, '-ar', '16000', '-ac', '1', wav_path], check=True)
+    ffmpeg_path = r"C:/ffmpeg/bin/ffmpeg.exe"  # ffmpeg 경로 지정
+    subprocess.run([ffmpeg_path, '-i', webm_path, '-ar', '16000', '-ac', '1', wav_path], check=True)
 
     recognizer = sr.Recognizer()
     try:
@@ -36,4 +37,4 @@ def recognize():
     return result
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, port=5000)
