@@ -1,0 +1,49 @@
+CREATE TABLE `user` (
+    `id` varchar(255) NOT NULL,
+    `password` varchar(255) NOT NULL,
+    `birthdate` DATE NOT NULL,
+    `email` varchar(255) NOT NULL,
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `game_score` (
+    `id` varchar(20) NOT NULL,
+    `game_name` varchar(20) NOT NULL,
+    `score` int NOT NULL,
+    `created_at` DATE DEFAULT CURRENT_DATE,
+    FOREIGN KEY (`id`) REFERENCES `user`(`id`)
+);
+
+CREATE TABLE `talk_score` (
+    `id` varchar(20) NOT NULL,
+    `npc_name` varchar(20) NOT NULL,
+    `score` int NOT NULL,
+    `created_at` DATE DEFAULT CURRENT_DATE,
+    FOREIGN KEY (`id`) REFERENCES `user`(`id`)
+);
+
+
+CREATE TABLE `achievement_table` (
+    `id` varchar(20) NOT NULL,
+    `arch_1` int DEFAULT 0,
+    `arch_2` int DEFAULT 0,
+    `arch_3` int DEFAULT 0,
+    `arch_4` int DEFAULT 0,
+    `arch_5` int DEFAULT 0,
+    `arch_6` int DEFAULT 0,
+    `arch_7` int DEFAULT 0,
+    `arch_8` int DEFAULT 0,
+    `arch_9` int DEFAULT 0,
+    `arch_10` int DEFAULT 0,
+    `arch_11` int DEFAULT 0,
+    `arch_12` int DEFAULT 0,
+    `arch_13` int DEFAULT 0,
+    `arch_14` int DEFAULT 0,
+    `arch_15` int DEFAULT 0,
+    `arch_16` int DEFAULT 0,
+    `arch_17` int DEFAULT 0,
+    `arch_18` int DEFAULT 0,
+    `arch_19` int DEFAULT 0,
+    `arch_20` int DEFAULT 0,
+    FOREIGN KEY (`id`) REFERENCES `user`(`id`)
+);
