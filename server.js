@@ -9,7 +9,7 @@ const server = http.createServer(app);
 // const io = socketIO(server);
 const cors = require('cors');
 const bcrypt = require('bcrypt');
-// const path = require('path');
+const path = require('path');
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -17,21 +17,34 @@ app.use(bodyParser.json());
 // WebGL용 서브 애플리케이션과 서버 설정
 const webglApp = express();
 
-function setGzipHeader(req, res, next) {
-  const gzExtension = '.gz';
-  const requestedPath = req.path;
+function setCustomHeaders(req, res, next) {
+  const ext = path.extname(req.path);
 
-  // 요청된 경로가 .gz로 끝나면 헤더 설정
-  if (requestedPath.endsWith(gzExtension)) {
-    res.setHeader('Content-Encoding', 'gzip');
-    res.setHeader('Content-Type', 'application/gzip'); // 올바른 MIME 타입 설정
+  switch (ext) {
+    case '.wasm':
+      res.setHeader('Content-Type', 'application/wasm');
+      break;
+    case '.gz':
+      res.setHeader('Content-Encoding', 'gzip');
+      if (req.path.endsWith('.data.gz')) {
+        res.setHeader('Content-Type', 'application/octet-stream');
+      } else if (req.path.endsWith('.js.gz')) {
+        res.setHeader('Content-Type', 'application/javascript');
+      } else if (req.path.endsWith('.wasm.gz')) {
+        res.setHeader('Content-Type', 'application/wasm');
+      } else {
+        res.setHeader('Content-Type', 'application/gzip');
+      }
+      break;
+    default:
+      break;
   }
   next();
 }
 
 // 미들웨어를 정적 파일 서빙 전에 적용
 webglApp.use(cors());
-webglApp.use(setGzipHeader);
+webglApp.use(setCustomHeaders);
 webglApp.use(express.static('MiniGames'));
 
 const WEBGL_PORT = 8080;
