@@ -153,11 +153,35 @@ app.post('/register', async (req, res) => {
         }
         console.log('회원가입 성공:', results);
         res.status(201).json({ message: '회원가입 성공' });
+
+        const stickerInsertQuery = 'INSERT INTO stickers (id) VALUES (?)';
+        connection.query(stickerInsertQuery, [id], (err, results) => {
+          if (err) {
+            console.error('스티커 row 추가 실패:', err);
+            return;
+          }
+          console.log('스티커 row 추가 성공:', results);
+        });
       });
     } catch (error) {
       console.error('비밀번호 해싱 실패:', error);
       res.status(500).json({ message: '서버 오류 발생' });
     }
+  });
+});
+
+app.post('/addStickerRow', (req, res) => {
+  const { id } = req.body;
+
+  const stickerInsertQuery = 'INSERT INTO stickers (id) VALUES (?)';
+  connection.query(stickerInsertQuery, [id], (err, results) => {
+    if (err) {
+      console.error('스티커 row 추가 실패:', err);
+      res.status(500).json({ message: '스티커 row 추가 실패' });
+      return;
+    }
+    console.log('스티커 row 추가 성공:', results);
+    res.status(201).json({ message: '스티커 row 추가 성공' });
   });
 });
 
