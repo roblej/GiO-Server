@@ -176,6 +176,55 @@ app.post('/addStickerRow', (req, res) => {
   });
 });
 
+app.get('/getSticker/:id', (req, res) => {
+  const { id } = req.params;
+
+  const selectQuery = 'SELECT * FROM stickers WHERE id = ?';
+  connection.query(selectQuery, [id], (err, results) => {
+    if (err) {
+      console.error('스티커 조회 실패:', err);
+      res.status(500).json({ message: '스티커 조회 실패' });
+      return;
+    }
+
+    if (results.length === 0) {
+      res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+      return;
+    }
+
+    console.log('스티커 조회 성공:', results);
+    res.status(200).json(results[0]);
+  });
+});
+
+app.post('/updateSticker', (req, res) => {
+  const { id, stickerNumber } = req.body;
+
+  if (!id || !stickerNumber) {
+    return res.status(400).json({ message: 'id와 stickerNumber를 모두 제공해야 합니다.' });
+  }
+
+  // stickerNumber를 이용해 업데이트할 컬럼을 동적으로 생성
+  const column = `sticker${stickerNumber}`;
+
+  const updateQuery = `UPDATE stickers SET ${column} = 1 WHERE id = ?`;
+  connection.query(updateQuery, [id], (err, results) => {
+    if (err) {
+      console.error('스티커 업데이트 실패:', err);
+      res.status(500).json({ message: '스티커 업데이트 실패' });
+      return;
+    }
+
+    if (results.affectedRows === 0) {
+      res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+      return;
+    }
+
+    console.log('스티커 업데이트 성공:', results);
+    res.status(200).json({ message: '스티커 업데이트 성공' });
+  });
+});
+
 app.get('/api/gamescore', (req, res) => {
   const userId = req.query.id;
   const gameName = req.query.game_name;
