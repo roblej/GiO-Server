@@ -23,3 +23,6 @@ print(f"Test Accuracy: {test_acc}")
 
 # 실제 오디오에서 예측
 prediction = model.predict(load_audio_file('path_to_audio_file.wav'))
+
+
+

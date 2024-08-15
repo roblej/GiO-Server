@@ -91,6 +91,21 @@ function handleDisconnect() {
 
 handleDisconnect();
 
+function keepAlive() {
+  connection.query('SELECT 1', (err) => {
+    if (err) {
+      console.error('Keep-alive query failed:', err);
+      handleDisconnect(); // 재연결 시도
+    } else {
+      console.log('Keep-alive query executed successfully');
+    }
+  });
+}
+
+// 5분마다 (300,000ms) Keep-alive 쿼리 실행
+setInterval(keepAlive, 3000000);
+
+
 app.post('/login', (req, res) => {
   const { id, password } = req.body;
 
@@ -173,6 +188,21 @@ app.post('/addStickerRow', (req, res) => {
     }
     console.log('스티커 row 추가 성공:', results);
     res.status(201).json({ message: '스티커 row 추가 성공' });
+  });
+});
+
+app.post('/addProcessRow', (req, res) => {
+  const { id } = req.body;
+
+  const processInsertQuery = 'INSERT INTO process (id) VALUES (?)';
+  connection.query(processInsertQuery, [id], (err, results) => {
+    if (err) {
+      console.error('진행도 row 추가 실패:', err);
+      res.status(500).json({ message: '진행도 row 추가 실패' });
+      return;
+    }
+    console.log('진행도 row 추가 성공:', results);
+    res.status(201).json({ message: '진행도 row 추가 성공' });
   });
 });
 
