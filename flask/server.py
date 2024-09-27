@@ -7,6 +7,10 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/')
+def index():
+    return "Flask 서버가 실행 중입니다. /recognize 경로로 POST 요청을 보내세요."
+
 @app.route('/recognize', methods=['POST'])
 def recognize():
     if 'file' not in request.files:
