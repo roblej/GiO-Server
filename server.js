@@ -91,6 +91,21 @@ function handleDisconnect() {
 
 handleDisconnect();
 
+function keepAlive() {
+  connection.query('SELECT 1', (err) => {
+    if (err) {
+      console.error('Keep-alive query failed:', err);
+      handleDisconnect(); // 재연결 시도
+    } else {
+      console.log('Keep-alive query executed successfully');
+    }
+  });
+}
+
+// 5분마다 (300,000ms) Keep-alive 쿼리 실행
+setInterval(keepAlive, 3000000);
+
+
 app.post('/login', (req, res) => {
   const { id, password } = req.body;
 
@@ -158,6 +173,85 @@ app.post('/register', async (req, res) => {
       console.error('비밀번호 해싱 실패:', error);
       res.status(500).json({ message: '서버 오류 발생' });
     }
+  });
+});
+
+app.post('/addStickerRow', (req, res) => {
+  const { id } = req.body;
+
+  const stickerInsertQuery = 'INSERT INTO stickers (id) VALUES (?)';
+  connection.query(stickerInsertQuery, [id], (err, results) => {
+    if (err) {
+      console.error('스티커 row 추가 실패:', err);
+      res.status(500).json({ message: '스티커 row 추가 실패' });
+      return;
+    }
+    console.log('스티커 row 추가 성공:', results);
+    res.status(201).json({ message: '스티커 row 추가 성공' });
+  });
+});
+
+app.post('/addProcessRow', (req, res) => {
+  const { id } = req.body;
+
+  const processInsertQuery = 'INSERT INTO process (id) VALUES (?)';
+  connection.query(processInsertQuery, [id], (err, results) => {
+    if (err) {
+      console.error('진행도 row 추가 실패:', err);
+      res.status(500).json({ message: '진행도 row 추가 실패' });
+      return;
+    }
+    console.log('진행도 row 추가 성공:', results);
+    res.status(201).json({ message: '진행도 row 추가 성공' });
+  });
+});
+
+app.get('/getSticker/:id', (req, res) => {
+  const { id } = req.params;
+
+  const selectQuery = 'SELECT * FROM stickers WHERE id = ?';
+  connection.query(selectQuery, [id], (err, results) => {
+    if (err) {
+      console.error('스티커 조회 실패:', err);
+      res.status(500).json({ message: '스티커 조회 실패' });
+      return;
+    }
+
+    if (results.length === 0) {
+      res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+      return;
+    }
+
+    console.log('스티커 조회 성공:', results);
+    res.status(200).json(results[0]);
+  });
+});
+
+app.post('/updateSticker', (req, res) => {
+  const { id, stickerNumber } = req.body;
+
+  if (!id || !stickerNumber) {
+    return res.status(400).json({ message: 'id와 stickerNumber를 모두 제공해야 합니다.' });
+  }
+
+  // stickerNumber를 이용해 업데이트할 컬럼을 동적으로 생성
+  const column = `sticker${stickerNumber}`;
+
+  const updateQuery = `UPDATE stickers SET ${column} = 1 WHERE id = ?`;
+  connection.query(updateQuery, [id], (err, results) => {
+    if (err) {
+      console.error('스티커 업데이트 실패:', err);
+      res.status(500).json({ message: '스티커 업데이트 실패' });
+      return;
+    }
+
+    if (results.affectedRows === 0) {
+      res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+      return;
+    }
+
+    console.log('스티커 업데이트 성공:', results);
+    res.status(200).json({ message: '스티커 업데이트 성공' });
   });
 });
 

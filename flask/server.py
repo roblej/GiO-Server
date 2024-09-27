@@ -93,6 +93,10 @@ def call_clova_chatbot(message):
 
 
 # 1. 음성 인식 엔드포인트
+@app.route('/')
+def index():
+    return "Flask 서버가 실행 중입니다. /recognize 경로로 POST 요청을 보내세요."
+
 @app.route('/recognize', methods=['POST'])
 def recognize():
     if 'file' not in request.files:
