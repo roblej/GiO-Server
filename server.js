@@ -109,7 +109,7 @@ setInterval(keepAlive, 3000000);
 app.post('/login', (req, res) => {
   const { id, password } = req.body;
 
-  const query = 'SELECT id, password FROM user WHERE id = ?';
+  const query = 'SELECT id, password, gender FROM user WHERE id = ?';
   connection.query(query, [id], async (err, results) => {
     if (err) {
       console.error('로그인 중 데이터베이스 조회 오류:', err);
@@ -127,7 +127,7 @@ app.post('/login', (req, res) => {
     try {
       const match = await bcrypt.compare(password, user.password);
       if (match) {
-        res.json({ message: '로그인 성공' });
+        res.json({ message: '로그인 성공', gender: user.gender });
       } else {
         res.status(401).json({ message: '잘못된 사용자 ID 또는 비밀번호' });
       }
@@ -139,7 +139,7 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-  const { id, password } = req.body;
+  const { id, password, name, gender, birthdate, email } = req.body;
 
   // 먼저 ID가 이미 존재하는지 확인
   const idCheckQuery = 'SELECT id FROM user WHERE id = ?';
@@ -159,8 +159,10 @@ app.post('/register', async (req, res) => {
     // ID가 중복되지 않은 경우, 비밀번호 해싱 후 새로운 유저 등록
     try {
       const hashedPassword = await bcrypt.hash(password, saltRounds);
-      const insertQuery = 'INSERT INTO user (id, password) VALUES (?, ?)';
-      connection.query(insertQuery, [id, hashedPassword], (err, results) => {
+
+      // 유저 정보를 DB에 삽입하는 쿼리 (name, gender, birthdate, email 추가)
+      const insertQuery = 'INSERT INTO user (id, password, name, gender, birthdate, email) VALUES (?, ?, ?, ?, ?, ?)';
+      connection.query(insertQuery, [id, hashedPassword, name, gender, birthdate, email], (err, results) => {
         if (err) {
           console.error('회원가입 실패:', err);
           res.status(500).json({ message: '회원가입 실패' });
