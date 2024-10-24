@@ -287,6 +287,36 @@ app.post('/api/gamescore', (req, res) => {
   });
 });
 
+app.get('/api/chatscore', (req, res) => {
+  const userId = req.query.id;
+  const npc = req.query.npc;
+  const query = 'SELECT * FROM chat_score WHERE id = ? AND npc_name = ? AND map = ?';
+
+  connection.query(query, [userId, npc], (err, results, fields) => {
+    if (err) {
+      console.error('쿼리 실행 실패: ' + err.stack);
+      res.status(500).json({ error: '데이터베이스 쿼리 실행 중 오류 발생' });
+      return;
+    }
+    res.json(results);
+  });
+});
+
+app.post('/api/chatscore', (req, res) => {
+  const { id, npc, map, score } = req.body;
+  const query = 'INSERT INTO game_score (id, npc, map, score) VALUES (?, ?, ?, ?)';
+
+  connection.query(query, [id, npc, map, score], (error, results, fields) => {
+    if (error) {
+      console.error('데이터 삽입 실패:', error);
+      res.status(500).json({ message: '데이터 삽입 실패' });
+    } else {
+      console.log('데이터 삽입 성공:', results);
+      res.json({ message: '데이터 삽입 성공' });
+    }
+  });
+});
+
 const PORT = 3000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
