@@ -7,6 +7,7 @@ import requests
 import json
 from dotenv import load_dotenv
 import http.client
+from google.cloud import texttospeech
 
 # 환경 변수 로드
 load_dotenv()
@@ -35,8 +36,9 @@ class CompletionExecutor:
             'X-NCP-CLOVASTUDIO-REQUEST-ID': self._request_id
         }
 
+        # 새로운 학습 모델 URL 반영
         conn = http.client.HTTPSConnection(self._host)
-        conn.request('POST', '/testapp/v1/tasks/stod5o4i/completions', json.dumps(completion_request), headers)
+        conn.request('POST', '/testapp/v1/tasks/rdu4xp4z/completions', json.dumps(completion_request), headers)
         response = conn.getresponse()
         result = json.loads(response.read().decode(encoding='utf-8'))
         conn.close()
@@ -135,6 +137,7 @@ def clova():
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         return jsonify({'error': 'Internal Server Error'}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
