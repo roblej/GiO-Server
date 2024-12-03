@@ -7,7 +7,6 @@ import requests
 import json
 from dotenv import load_dotenv
 import http.client
-from google.cloud import texttospeech
 
 # 환경 변수 로드
 load_dotenv()
